@@ -9,6 +9,10 @@
 #import "RCCRequest.h"
 #import "RetainCC.h"
 
+@interface RetainCC ()
+- (void)setUid:(NSString*)uid;
+@end
+
 @interface RCCRequest ()
 
 @property (nonatomic, strong) NSString *apiKey;
@@ -60,6 +64,10 @@
                                if (!callback) {
                                    return;
                                }
+                               if ([data isKindOfClass:[NSDictionary class]] &&
+                                   [(NSDictionary*)data objectForKey:@"uid"]) {
+                                   [[RetainCC shared] setUid:[(NSDictionary*)data objectForKey:@"uid"]];
+                               }
                                NSHTTPURLResponse *httpReponse = (NSHTTPURLResponse*)response;
                                if (connectionError || httpReponse.statusCode != 200) {
                                    NSError *error = [NSError errorWithDomain:@"com.oursky.retaincc" code:httpReponse.statusCode userInfo:connectionError.userInfo];
@@ -79,6 +87,7 @@
     self.appID = [aDecoder decodeObjectForKey:@"appID"];
     self.userID = [aDecoder decodeObjectForKey:@"userID"];
     self.email = [aDecoder decodeObjectForKey:@"email"];
+    self.uid = [aDecoder decodeObjectForKey:@"uid"];
     
     return self;
 }
@@ -88,6 +97,7 @@
     [aCoder encodeObject:self.appID forKey:@"appID"];
     [aCoder encodeObject:self.userID forKey:@"userID"];
     [aCoder encodeObject:self.email forKey:@"email"];
+    [aCoder encodeObject:self.uid forKey:@"uid"];
 }
 
 @end

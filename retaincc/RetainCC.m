@@ -25,9 +25,12 @@
 
 @property (nonatomic, strong) NSString *userID;
 @property (nonatomic, strong) NSString *email;
+@property (nonatomic, strong) NSString *uid;
 
 @property (nonatomic, strong) NSTimer *retryTimer;
 @property (nonatomic, strong) NSTimer *periodicPingTimer;
+
+- (void)setUid:(NSString*)uid;
 
 - (void)logEventWithName:(NSString*)name properties:(NSDictionary*)dict callback:(void(^)(BOOL success, NSError *error))callback;
 - (void)identifyWithEmail:(NSString*)email userID:(NSString*)userID callback:(void(^)(BOOL success, NSError *error))callback;
@@ -82,6 +85,14 @@ static RetainCC *sharedInstance = nil;
     return self;
 }
 
+- (void)setUid:(NSString *)uid{
+    if ([uid isEqualToString:_uid]) {
+        return;
+    }
+    _uid = uid;
+    [self saveUserInfo];
+}
+
 #pragma mark - public methods
 
 - (void)logEventWithName:(NSString*)name properties:(NSDictionary*)dict {
@@ -104,6 +115,7 @@ static RetainCC *sharedInstance = nil;
     eventRequest.properties = dict;
     eventRequest.userID = self.userID;
     eventRequest.email = self.email;
+    eventRequest.uid = self.uid;
     
     [eventRequest send:^(BOOL success, NSError *error) {
         if (!success) {
@@ -116,8 +128,13 @@ static RetainCC *sharedInstance = nil;
 }
 
 - (void)identifyWithEmail:(NSString*)email userID:(NSString*)userID callback:(void(^)(BOOL success, NSError *error))callback {
+    if (![email isEqualToString:self.email] || ![userID isEqualToString:self.userID]) {
+        // user changed so uid is not valid anymore
+        self.uid = nil;
+    }
     self.userID = userID;
     self.email = email;
+
     [self saveUserInfo];
     [self changeUserAttributes:@{} callback:callback];
 }
@@ -126,6 +143,7 @@ static RetainCC *sharedInstance = nil;
     RCCUserAttributeRequest *userRequest = [[RCCUserAttributeRequest alloc] initWithApiKey:self.apiKey appID:self.appID];
     userRequest.userID = self.userID;
     userRequest.email = self.email;
+    userRequest.uid = self.uid;
     userRequest.attributes = dictionary;
     
     [userRequest send:^(BOOL success, NSError *error) {
@@ -149,6 +167,9 @@ static RetainCC *sharedInstance = nil;
     if (self.email) {
         [userInfo setObject:self.email forKey:@"email"];
     }
+    if (self.uid) {
+        [userInfo setObject:self.uid forKey:@"uid"];
+    }
     [userInfo writeToFile:filename atomically:YES];
 }
 
@@ -160,6 +181,9 @@ static RetainCC *sharedInstance = nil;
     }
     if ([userInfo objectForKey:@"email"]) {
         self.email = [userInfo objectForKey:@"email"];
+    }
+    if ([userInfo objectForKey:@"uid"]) {
+        self.uid = [userInfo objectForKey:@"uid"];
     }
 }
 

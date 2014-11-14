@@ -25,6 +25,11 @@
 @property (strong, nonatomic) NSString *email;
 
 /**
+ * Uid from RetainCC, stored in request to identify anonymous users
+ */
+@property (strong, nonatomic) NSString *uid;
+
+/**
  * Create a RCCRequest instance.
  *
  * It requires apiKey and appID from RetainCC, stored in request so developer can use multiple instance at the same time.

@@ -42,6 +42,9 @@
     if (self.email) {
         [params setObject:self.email forKey:@"email"];
     }
+    if (self.uid) {
+        [params setObject:self.uid forKey:@"uid"];
+    }
     [params setObject:@"iOS" forKey:@"last_seen_user_agent"];
     [params setObject:[NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970]] forKey:@"last_impression_at"];
     

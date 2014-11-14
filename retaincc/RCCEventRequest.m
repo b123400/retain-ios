@@ -16,8 +16,12 @@
     [params setObject:self.name forKey:@"event"];
     if (self.userID) {
         [params setObject:self.userID forKey:@"user_id"];
-    } else if (self.email) {
+    }
+    if (self.email) {
         [params setObject:self.email forKey:@"email"];
+    }
+    if (self.uid) {
+        [params setObject:self.uid forKey:@"uid"];
     }
     if (self.properties) {
         [params setObject:self.properties forKey:@"custom_data"];

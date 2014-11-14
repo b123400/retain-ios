@@ -83,12 +83,13 @@
         // content type check
         XCTAssert([[allHeaders objectForKey:@"Content-type"] rangeOfString:@"application/json"].location != NSNotFound,@"Request Content-type should be json");
         
-        
+        XCTAssert([[request HTTPMethod] isEqualToString:@"POST"],"should use post");
         NSLog(@"%@",[[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding]);
         NSError *error = nil;
         NSDictionary *bodyData = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:kNilOptions error:&error];
         NSDictionary *shouldSend = @{
                                      @"user_id" : @"1234",
+                                     @"email" : @"someone@example.com",
                                      @"event" : @"EVENT_NAME",
                                      @"custom_data" : @{
                                              @"CUSTOM_KEY" : @"CUSTOM_VALUE"
@@ -109,7 +110,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"send event async"];
     
     RetainCC *library = [[RetainCC alloc] initWithApiKey:@"API_KEY" appID:@"APP_ID"];
-    [library identifyWithEmail:nil userID:@"1234"];
+    [library identifyWithEmail:@"someone@example.com" userID:@"1234"];
     [library logEventWithName:@"EVENT_NAME" properties:@{
                                                          @"CUSTOM_KEY":@"CUSTOM_VALUE"
                                                          }
@@ -175,6 +176,7 @@
             
             // content type check
             XCTAssert([[allHeaders objectForKey:@"Content-type"] rangeOfString:@"application/json"].location != NSNotFound,@"Request Content-type should be json");
+            XCTAssert([[request HTTPMethod] isEqualToString:@"POST"],"should use post");
             
             NSError *error = nil;
             NSDictionary *bodyData = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:kNilOptions error:&error];
