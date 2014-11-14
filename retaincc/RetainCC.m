@@ -9,6 +9,7 @@
 #import "RetainCC.h"
 #import "RCCEventRequest.h"
 #import "RCCUserAttributeRequest.h"
+#import "RCCImpressionRequest.h"
 #import "Reachability.h"
 
 // 10 minutes
@@ -35,6 +36,7 @@
 - (void)logEventWithName:(NSString*)name properties:(NSDictionary*)dict callback:(void(^)(BOOL success, NSError *error))callback;
 - (void)identifyWithEmail:(NSString*)email userID:(NSString*)userID callback:(void(^)(BOOL success, NSError *error))callback;
 - (void)changeUserAttributes:(NSDictionary*)dictionary callback:(void(^)(BOOL success, NSError *error))callback;
+- (void)sendPeriodicRequest;
 
 #pragma mark Saving
 - (void)saveUserInfo;
@@ -80,6 +82,7 @@ static RetainCC *sharedInstance = nil;
     [reach startNotifier];
     
     self.periodicPingTimer = [NSTimer scheduledTimerWithTimeInterval:kRetainCCPingInterval target:self selector:@selector(periodicPingTimerCalled:) userInfo:nil repeats:YES];
+    [self sendPeriodicRequest];
     
     return self;
 }
@@ -254,13 +257,18 @@ static RetainCC *sharedInstance = nil;
 
 #pragma mark Periodic ping
 
+- (void)sendPeriodicRequest {
+    RCCImpressionRequest *request = [[RCCImpressionRequest alloc] initWithApiKey:self.apiKey appID:self.appID];
+    request.userID = self.userID;
+    request.email = self.email;
+    request.uid = self.uid;
+    [request send:^(BOOL success, NSError *error) {
+        
+    }];
+}
+
 - (void)periodicPingTimerCalled:(NSTimer*)timer {
-    // ping server
-    RCCUserAttributeRequest *userRequest = [[RCCUserAttributeRequest alloc] initWithApiKey:self.apiKey appID:self.appID];
-    userRequest.userID = self.userID;
-    userRequest.email = self.email;
-    // give up if failed
-    [userRequest send:^(BOOL success, NSError *error) {}];
+    [self sendPeriodicRequest];
 }
 
 #pragma mark Utility
