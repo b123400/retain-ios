@@ -139,6 +139,58 @@
     }];
 }
 
+- (void)testHandlingUid {
+    
+    __block NSString *ipAddress = @"";
+    
+    RetainCC *library = [RetainCC sharedInstanceWithApiKey:@"API_KEY" appID:@"APP_ID"];
+    ipAddress = [RCCUserAttributeRequest getIPAddress];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"change uid"];
+    
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        NSData* stubData = [@"{\"email\" : \"bencheng@oursky.com\",\"user_id\" : \"1\",\"name\" : \"Ben Cheng\", \"uid\" : \"6543\"}" dataUsingEncoding:NSUTF8StringEncoding];
+        NSLog(@"%@",stubData);
+        return [OHHTTPStubsResponse responseWithData:stubData statusCode:200 headers:@{
+                                                                                       @"Content-type":@"application/json"
+                                                                                       }];
+    }];
+    
+    [library identifyWithEmail:@"test@example.com" userID:@"1234" callback:^(BOOL success, NSError *error) {
+        [OHHTTPStubs removeAllStubs];
+        [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+            
+            BOOL shouldApply = [request.URL.absoluteString isEqualToString:@"https://app.retain.cc/api/v1/users"];
+            if (!shouldApply) return NO;
+
+            NSError *error = nil;
+            NSDictionary *bodyData = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:kNilOptions error:&error];
+            XCTAssert([[bodyData objectForKey:@"uid"] isEqualToString:@"6543"], @"send correct data");
+            XCTAssert(!error);
+            
+            return YES;
+        } withStubResponse:^OHHTTPStubsResponse*(NSURLRequest *request) {
+            NSData* stubData = [@"{\"email\" : \"bencheng@oursky.com\",\"user_id\" : \"1\",\"name\" : \"Ben Cheng\",\"created_at\" : 1257553080,\"custom_data\" : {\"plan\" : \"pro\"},\"last_seen_ip\" : \"1.2.3.4\",\"last_seen_user_agent\" : \"ie6\",\"company_ids\" : [6, 10],\"last_impression_at\" : 1300000000}" dataUsingEncoding:NSUTF8StringEncoding];
+            return [OHHTTPStubsResponse responseWithData:stubData statusCode:200 headers:@{
+                                                                                           @"Content-type":@"application/json"
+                                                                                           }];
+        }];
+        
+        [library changeUserAttributes:@{}
+                         callback:^(BOOL success, NSError *error) {
+                             XCTAssert(success,@"Request failed, %@", error);
+                             [expectation fulfill];
+                         }];
+    }];
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
+        if (error) {
+            NSLog(@"test error: %@", error.localizedDescription);
+        }
+    }];
+}
+
 - (void)testChangeUserAttributes {
     
     __block NSString *ipAddress = @"";
@@ -146,7 +198,7 @@
     RetainCC *library = [[RetainCC alloc] initWithApiKey:@"API_KEY" appID:@"APP_ID"];
     ipAddress = [RCCUserAttributeRequest getIPAddress];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"change user attribute async"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"receiving and send uid"];
     
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
         return YES;
@@ -181,22 +233,22 @@
             NSError *error = nil;
             NSDictionary *bodyData = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:kNilOptions error:&error];
             NSDictionary *shouldSend = @{
-                                          @"email" : @"test@example.com",
-                                          @"user_id" : @"1234",
-                                          @"name" : @"Ben",
-                                          @"custom_data" : @{
-                                                  @"CUSTOM_KEY1" : @"CUSTOM_VALUE1",
-                                                  @"CUSTOM_KEY2" : @"CUSTOM_VALUE2",
-                                                  @"system_version" : [UIDevice currentDevice].systemVersion,
-                                                  @"system_name" : [UIDevice currentDevice].systemName,
-                                                  @"model" : [UIDevice currentDevice].model,
-                                                  @"screen_size" : NSStringFromCGSize([UIScreen mainScreen].bounds.size),
-                                                  @"scale" : [NSString stringWithFormat:@"%f",[UIScreen mainScreen].scale]
-                                              }.mutableCopy,
-                                          @"last_seen_ip" : ipAddress,
-                                          @"last_seen_user_agent" : @"iOS",
-                                          @"last_impression_at" : [bodyData objectForKey:@"last_impression_at"]
-                                          };
+                                         @"email" : @"test@example.com",
+                                         @"user_id" : @"1234",
+                                         @"name" : @"Ben",
+                                         @"custom_data" : @{
+                                                 @"CUSTOM_KEY1" : @"CUSTOM_VALUE1",
+                                                 @"CUSTOM_KEY2" : @"CUSTOM_VALUE2",
+                                                 @"system_version" : [UIDevice currentDevice].systemVersion,
+                                                 @"system_name" : [UIDevice currentDevice].systemName,
+                                                 @"model" : [UIDevice currentDevice].model,
+                                                 @"screen_size" : NSStringFromCGSize([UIScreen mainScreen].bounds.size),
+                                                 @"scale" : [NSString stringWithFormat:@"%f",[UIScreen mainScreen].scale]
+                                                 }.mutableCopy,
+                                         @"last_seen_ip" : ipAddress,
+                                         @"last_seen_user_agent" : @"iOS",
+                                         @"last_impression_at" : [bodyData objectForKey:@"last_impression_at"]
+                                         };
             if ([[UIScreen mainScreen] respondsToSelector:@selector(nativeBounds)]) {
                 [[shouldSend objectForKey:@"custom_data"] setObject:NSStringFromCGSize([UIScreen mainScreen].nativeBounds.size) forKey:@"native_screen_size"];
             }
@@ -226,10 +278,10 @@
                                         @"CUSTOM_KEY1" : @"CUSTOM_VALUE1",
                                         @"CUSTOM_KEY2" : @"CUSTOM_VALUE2"
                                         }
-                         callback:^(BOOL success, NSError *error) {
-                             XCTAssert(success,@"Request failed, %@", error);
-                             [expectation fulfill];
-                         }];
+                             callback:^(BOOL success, NSError *error) {
+                                 XCTAssert(success,@"Request failed, %@", error);
+                                 [expectation fulfill];
+                             }];
     }];
     [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
         if (error) {

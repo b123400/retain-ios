@@ -57,6 +57,8 @@ static RetainCC *sharedInstance = nil;
         // warn for calling twice?
     } else {
         sharedInstance = [[RetainCC alloc] initWithApiKey:apiKey appID:appID];
+        [sharedInstance restoreUserInfo];
+        [sharedInstance executePendingRequests];
     }
     return sharedInstance;
 }
@@ -76,9 +78,6 @@ static RetainCC *sharedInstance = nil;
     Reachability *reach = [Reachability reachabilityForInternetConnection];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reachabilityChanged:) name:kReachabilityChangedNotification object:nil];
     [reach startNotifier];
-    
-    [self restoreUserInfo];
-    [self executePendingRequests];
     
     self.periodicPingTimer = [NSTimer scheduledTimerWithTimeInterval:kRetainCCPingInterval target:self selector:@selector(periodicPingTimerCalled:) userInfo:nil repeats:YES];
     
