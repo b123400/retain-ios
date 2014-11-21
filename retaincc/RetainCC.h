@@ -78,4 +78,12 @@
  */
 - (void)changeUserAttributes:(NSDictionary*)dictionary;
 
+/**
+ * Inform RetainCC when you got the push token, you can call this multiple times.
+ *
+ * @param pushToken The data iOS returned when user gives you permission.
+ */
+
+- (void)setDevicePushToken:(NSData*)pushToken;
+
 @end

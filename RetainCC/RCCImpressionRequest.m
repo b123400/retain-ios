@@ -22,6 +22,8 @@
     }
     if (self.uid) {
         [params setObject:self.uid forKey:@"uid"];
+    } else {
+        [params setObject:[NSNumber numberWithBool:YES] forKey:@"_create_anonymous_user"];
     }
     
     [params setObject:[NSString stringWithFormat:@"%.0f",[[NSDate date] timeIntervalSince1970]] forKey:@"last_impression_at"];

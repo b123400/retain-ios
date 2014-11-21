@@ -10,6 +10,7 @@
 #import "RCCEventRequest.h"
 #import "RCCUserAttributeRequest.h"
 #import "RCCImpressionRequest.h"
+#import "RCCDeviceRequest.h"
 #import "Reachability.h"
 
 // 10 minutes
@@ -19,6 +20,10 @@
 #define NSLog(...)
 #endif
 
+@interface NSData (Conversion)
+- (NSString *)hexadecimalString;
+@end
+
 @interface RetainCC ()
 
 @property (nonatomic, strong) NSString *apiKey;
@@ -27,6 +32,7 @@
 @property (nonatomic, strong) NSString *userID;
 @property (nonatomic, strong) NSString *email;
 @property (nonatomic, strong) NSString *uid;
+@property (nonatomic, strong) NSString *pushToken;
 
 @property (nonatomic, strong) NSTimer *retryTimer;
 @property (nonatomic, strong) NSTimer *periodicPingTimer;
@@ -36,6 +42,7 @@
 - (void)logEventWithName:(NSString*)name properties:(NSDictionary*)dict callback:(void(^)(BOOL success, NSError *error))callback;
 - (void)identifyWithEmail:(NSString*)email userID:(NSString*)userID callback:(void(^)(BOOL success, NSError *error))callback;
 - (void)changeUserAttributes:(NSDictionary*)dictionary callback:(void(^)(BOOL success, NSError *error))callback;
+- (void)sendDeviceRequest:(void(^)(BOOL success, NSError *error))callback;
 - (void)sendPeriodicRequest;
 
 #pragma mark Saving
@@ -108,6 +115,18 @@ static RetainCC *sharedInstance = nil;
     [self changeUserAttributes:dictionary callback:nil];
 }
 
+- (void)setDevicePushToken:(NSData *)pushToken{
+    NSString *tokenString = [pushToken hexadecimalString];
+    if ([tokenString isEqualToString:self.pushToken]) {
+        return;
+    }
+    self.pushToken = tokenString;
+    [self saveUserInfo];
+    [self sendDeviceRequest:^(BOOL success, NSError *error) {
+        
+    }];
+}
+
 #pragma mark - private methods
 
 - (void)logEventWithName:(NSString*)name properties:(NSDictionary*)dict callback:(void(^)(BOOL success, NSError *error))callback {
@@ -138,7 +157,10 @@ static RetainCC *sharedInstance = nil;
     self.email = email;
 
     [self saveUserInfo];
-    [self changeUserAttributes:@{} callback:callback];
+    [self sendPeriodicRequest:callback];
+    [self sendDeviceRequest:^(BOOL success, NSError *error) {
+        
+    }];
 }
 
 - (void)changeUserAttributes:(NSDictionary*)dictionary callback:(void(^)(BOOL success, NSError *error))callback {
@@ -158,6 +180,15 @@ static RetainCC *sharedInstance = nil;
     }];
 }
 
+- (void)sendDeviceRequest:(void(^)(BOOL success, NSError *error))callback {
+    RCCDeviceRequest *request = [[RCCDeviceRequest alloc] initWithApiKey:self.apiKey appID:self.appID];
+    request.userID = self.userID;
+    request.email = self.email;
+    request.uid = self.uid;
+    request.pushToken = self.pushToken;
+    [request send:callback];
+}
+
 # pragma - saving things
 
 - (void)saveUserInfo {
@@ -171,6 +202,9 @@ static RetainCC *sharedInstance = nil;
     }
     if (self.uid) {
         [userInfo setObject:self.uid forKey:@"uid"];
+    }
+    if (self.pushToken) {
+        [userInfo setObject:self.pushToken forKey:@"pushToken"];
     }
     [userInfo writeToFile:filename atomically:YES];
 }
@@ -186,6 +220,9 @@ static RetainCC *sharedInstance = nil;
     }
     if ([userInfo objectForKey:@"uid"]) {
         self.uid = [userInfo objectForKey:@"uid"];
+    }
+    if ([userInfo objectForKey:@"pushToken"]) {
+        self.pushToken = [userInfo objectForKey:@"pushToken"];
     }
 }
 
@@ -257,14 +294,16 @@ static RetainCC *sharedInstance = nil;
 
 #pragma mark Periodic ping
 
-- (void)sendPeriodicRequest {
+- (void)sendPeriodicRequest:(void(^)(BOOL success, NSError *error))callback {
     RCCImpressionRequest *request = [[RCCImpressionRequest alloc] initWithApiKey:self.apiKey appID:self.appID];
     request.userID = self.userID;
     request.email = self.email;
     request.uid = self.uid;
-    [request send:^(BOOL success, NSError *error) {
-        
-    }];
+    [request send:callback];
+}
+
+- (void)sendPeriodicRequest {
+    [self sendPeriodicRequest:nil];
 }
 
 - (void)periodicPingTimerCalled:(NSTimer*)timer {
@@ -285,4 +324,25 @@ static RetainCC *sharedInstance = nil;
     [self executePendingRequests];
 }
 
+@end
+
+#pragma mark Utility
+
+@implementation NSData (Conversion)
+- (NSString *)hexadecimalString {
+    const unsigned char *dataBuffer = (const unsigned char *)[self bytes];
+    
+    if (!dataBuffer) {
+        return [NSString string];
+    }
+    
+    NSUInteger          dataLength  = [self length];
+    NSMutableString     *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    
+    for (int i = 0; i < dataLength; ++i) {
+        [hexString appendFormat:@"%02lx", (unsigned long)dataBuffer[i]];
+    }
+    
+    return hexString;
+}
 @end

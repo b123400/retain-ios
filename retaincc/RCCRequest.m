@@ -64,11 +64,13 @@
                                if (!callback) {
                                    return;
                                }
-                               NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                               NSLog(@"%@", dict);
-                               if ([dict isKindOfClass:[NSDictionary class]] &&
-                                   [dict objectForKey:@"uid"]) {
-                                   [[RetainCC shared] setUid:[dict objectForKey:@"uid"]];
+                               if (data) {
+                                   NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                                   NSLog(@"%@", dict);
+                                   if ([dict isKindOfClass:[NSDictionary class]] &&
+                                       [dict objectForKey:@"uid"]) {
+                                       [[RetainCC shared] setUid:[dict objectForKey:@"uid"]];
+                                   }
                                }
                                NSHTTPURLResponse *httpReponse = (NSHTTPURLResponse*)response;
                                if (connectionError || httpReponse.statusCode != 200) {

@@ -191,6 +191,42 @@
     }];
 }
 
+- (void)testAnonymousUser {
+    __block NSString *ipAddress = @"";
+    
+    RetainCC *library = [RetainCC sharedInstanceWithApiKey:@"API_KEY" appID:@"APP_ID"];
+    ipAddress = [RCCUserAttributeRequest getIPAddress];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"change uid"];
+    
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        if (![request.URL.absoluteString containsString:@"impression"]) {
+            return NO;
+        }
+        
+        NSError *error=nil;
+        NSDictionary *bodyData = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:kNilOptions error:&error];
+        NSAssert([[bodyData objectForKey:@"_create_anonymous_user"] boolValue],@"Should send _create_anonymous_user when uid is not absent");
+        
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        NSData* stubData = [@"{\"email\" : \"bencheng@oursky.com\",\"user_id\" : \"1\",\"name\" : \"Ben Cheng\", \"uid\" : \"6543\"}" dataUsingEncoding:NSUTF8StringEncoding];
+        NSLog(@"%@",stubData);
+        return [OHHTTPStubsResponse responseWithData:stubData statusCode:200 headers:@{
+                                                                                       @"Content-type":@"application/json"
+                                                                                       }];
+    }];
+    
+    [library identifyWithEmail:nil userID:nil callback:^(BOOL success, NSError *error) {
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:5 handler:^(NSError *error) {
+        if (error) {
+            NSLog(@"test error: %@", error.localizedDescription);
+        }
+    }];
+}
+
 - (void)testChangeUserAttributes {
     
     __block NSString *ipAddress = @"";

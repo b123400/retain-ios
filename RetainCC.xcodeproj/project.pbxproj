@@ -22,6 +22,9 @@
 
 /* Begin PBXBuildFile section */
 		CF12237919EBE15900F08541 /* RetainCC.h in Headers */ = {isa = PBXBuildFile; fileRef = CFA4031119E7E5B100F67ADD /* RetainCC.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CF25D4A41A1A0E6B002DE33B /* RCCDeviceRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CF25D4A21A1A0E6B002DE33B /* RCCDeviceRequest.h */; };
+		CF25D4A51A1A0E6B002DE33B /* RCCDeviceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CF25D4A31A1A0E6B002DE33B /* RCCDeviceRequest.m */; };
+		CF25D4A61A1A0E6B002DE33B /* RCCDeviceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CF25D4A31A1A0E6B002DE33B /* RCCDeviceRequest.m */; };
 		CF41A7161A1615F00094789B /* RCCImpressionRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CF41A7141A1615F00094789B /* RCCImpressionRequest.h */; };
 		CF41A7171A1615F00094789B /* RCCImpressionRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CF41A7151A1615F00094789B /* RCCImpressionRequest.m */; };
 		CF41A7181A1615F00094789B /* RCCImpressionRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CF41A7151A1615F00094789B /* RCCImpressionRequest.m */; };
@@ -90,6 +93,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CF25D4A21A1A0E6B002DE33B /* RCCDeviceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCDeviceRequest.h; sourceTree = "<group>"; };
+		CF25D4A31A1A0E6B002DE33B /* RCCDeviceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCDeviceRequest.m; sourceTree = "<group>"; };
 		CF41A7141A1615F00094789B /* RCCImpressionRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCCImpressionRequest.h; sourceTree = "<group>"; };
 		CF41A7151A1615F00094789B /* RCCImpressionRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCCImpressionRequest.m; sourceTree = "<group>"; };
 		CF9A33D119EBC699002DB35F /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
@@ -160,6 +165,8 @@
 				CFA4031019E7E5B100F67ADD /* RCCUserAttributeRequest.m */,
 				CF41A7141A1615F00094789B /* RCCImpressionRequest.h */,
 				CF41A7151A1615F00094789B /* RCCImpressionRequest.m */,
+				CF25D4A21A1A0E6B002DE33B /* RCCDeviceRequest.h */,
+				CF25D4A31A1A0E6B002DE33B /* RCCDeviceRequest.m */,
 				CFA4031719E7E5CB00F67ADD /* Libraries */,
 			);
 			path = RetainCC;
@@ -226,6 +233,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CF25D4A41A1A0E6B002DE33B /* RCCDeviceRequest.h in Headers */,
 				CF41A7161A1615F00094789B /* RCCImpressionRequest.h in Headers */,
 				CF12237919EBE15900F08541 /* RetainCC.h in Headers */,
 			);
@@ -380,6 +388,7 @@
 				CFA4031519E7E5B100F67ADD /* RCCUserAttributeRequest.m in Sources */,
 				CFA4031419E7E5B100F67ADD /* RCCRequest.m in Sources */,
 				CFA4031619E7E5B100F67ADD /* RetainCC.m in Sources */,
+				CF25D4A51A1A0E6B002DE33B /* RCCDeviceRequest.m in Sources */,
 				CF41A7171A1615F00094789B /* RCCImpressionRequest.m in Sources */,
 				CFA4031319E7E5B100F67ADD /* RCCEventRequest.m in Sources */,
 				CF9A33D319EBC699002DB35F /* Reachability.m in Sources */,
@@ -393,6 +402,7 @@
 				CFA4033E19E7ED4B00F67ADD /* RCCUserAttributeRequest.m in Sources */,
 				CFA4033D19E7ED4B00F67ADD /* RCCRequest.m in Sources */,
 				CFA4033B19E7ED4B00F67ADD /* RetainCC.m in Sources */,
+				CF25D4A61A1A0E6B002DE33B /* RCCDeviceRequest.m in Sources */,
 				CF41A7181A1615F00094789B /* RCCImpressionRequest.m in Sources */,
 				CFA4033A19E7ED0C00F67ADD /* retainccTests.m in Sources */,
 				CFA4033C19E7ED4B00F67ADD /* RCCEventRequest.m in Sources */,
