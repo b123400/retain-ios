@@ -200,7 +200,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"change uid"];
     
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
-        if (![request.URL.absoluteString containsString:@"impression"]) {
+        if ([request.URL.absoluteString rangeOfString:@"impression"].location == NSNotFound) {
             return NO;
         }
         
